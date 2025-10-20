@@ -43,6 +43,13 @@ const Navbar = ({ isUser }) => {
                             <Link to="/about" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
                                 About
                             </Link>
+                            {isUser ? <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                                Dashboard
+                            </Link> : null}
+                            {isUser ? <Link to="/create-pitch" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                                Create Pitch
+                            </Link> : null}
+                            
                             <Link to="/contact" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
                                 Contact
                             </Link>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, onSnapshot, db, auth } from '../config/firebase';
+import { collection, query, where, onSnapshot, doc, db, auth } from '../config/firebase';
 import { message } from 'antd';
 
 const Dashboard = () => {
@@ -14,20 +14,32 @@ const Dashboard = () => {
       return;
     }
 
-    const q = query(
-      collection(db, 'pitches'),
-      where('userId', '==', auth.currentUser.uid)
+    // ✅ FIX: Query the correct subcollection path
+    const userPitchesRef = collection(
+      db, 
+      'pitches', 
+      auth.currentUser.uid, 
+      'user_pitches'
     );
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const unsubscribe = onSnapshot(userPitchesRef, (querySnapshot) => {
       const pitchesData = [];
       querySnapshot.forEach((doc) => {
         pitchesData.push({ id: doc.id, ...doc.data() });
       });
       
-      pitchesData.sort((a, b) => b.createdAt?.toDate() - a.createdAt?.toDate());
+      // ✅ FIX: Handle timestamp safely
+      pitchesData.sort((a, b) => {
+        const timeA = a.createdAt?.toDate?.() || new Date(0);
+        const timeB = b.createdAt?.toDate?.() || new Date(0);
+        return timeB - timeA;
+      });
       
       setPitches(pitchesData);
+      setLoading(false);
+    }, (error) => {
+      console.error('Error fetching pitches:', error);
+      message.error('Failed to load pitches');
       setLoading(false);
     });
 
@@ -42,6 +54,28 @@ const Dashboard = () => {
     } catch (error) {
       message.error('Failed to log out');
     }
+  };
+
+  // ✅ FIX: Helper function to extract data for display
+  const getPitchDisplayData = (pitch) => {
+    // Try to extract startup name from the names section
+    const namesText = pitch.names || '';
+    const firstLine = namesText.split('\n')[0] || 'Untitled Pitch';
+    
+    // Extract a tagline (second line or default)
+    const lines = namesText.split('\n').filter(line => line.trim());
+    const tagline = lines[1] || 'No tagline available';
+    
+    // Use the first part of the pitch section as description
+    const pitchText = pitch.pitch || '';
+    const shortPitch = pitchText.split('.')[0] + '.';
+
+    return {
+      title: firstLine.replace(/^\d+\.\s*/, ''), // Remove numbering like "1. "
+      tagline: tagline,
+      description: shortPitch,
+      date: pitch.createdAt?.toDate?.() || new Date()
+    };
   };
 
   if (loading) {
@@ -90,32 +124,33 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pitches.map((pitch) => (
-                <div
-                  key={pitch.id}
-                  className="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer border border-blue-100"
-                  onClick={() => navigate(`/pitch/${pitch.id}`)}
-                >
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    {pitch.idea.title}
-                  </h3>
-                  <p className="text-blue-600 font-medium mb-2 text-lg">
-                    {pitch.pitch.startup_name}
-                  </p>
-                  <p className="text-gray-600 text-sm mb-4 italic">
-                    "{pitch.pitch.tagline}"
-                  </p>
-                  <p className="text-gray-700 mb-4 text-sm line-clamp-3">
-                    {pitch.pitch.elevator_pitch}
-                  </p>
-                  <div className="flex justify-between items-center text-xs text-gray-500">
-                    <span className="bg-blue-100 px-2 py-1 rounded">
-                      {pitch.idea.industry}
-                    </span>
-                    <span>{pitch.createdAt?.toDate().toLocaleDateString()}</span>
+              {pitches.map((pitch) => {
+                const displayData = getPitchDisplayData(pitch);
+                
+                return (
+                  <div
+                    key={pitch.id}
+                    className="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer border border-blue-100"
+                    onClick={() => navigate(`/pitch/${pitch.id}`)}
+                  >
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2 line-clamp-2">
+                      {displayData.title}
+                    </h3>
+                    <p className="text-blue-600 font-medium mb-2 text-sm italic line-clamp-2">
+                      "{displayData.tagline}"
+                    </p>
+                    <p className="text-gray-700 mb-4 text-sm line-clamp-3">
+                      {displayData.description}
+                    </p>
+                    <div className="flex justify-between items-center text-xs text-gray-500 mt-4">
+                      <span className="bg-blue-100 px-2 py-1 rounded">
+                        AI Generated
+                      </span>
+                      <span>{displayData.date.toLocaleDateString()}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
