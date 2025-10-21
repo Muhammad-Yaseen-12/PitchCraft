@@ -7,7 +7,7 @@ const Navbar = ({ isUser }) => {
     console.log(isUser);
     const navigate = useNavigate()
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false); 
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
@@ -36,7 +36,7 @@ const Navbar = ({ isUser }) => {
                             <Link to="/" className="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
                                 Home
                             </Link>
-                            
+
                             <Link to="/services" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
                                 Services
                             </Link>
@@ -49,7 +49,7 @@ const Navbar = ({ isUser }) => {
                             {isUser ? <Link to="/create-pitch" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
                                 Create Pitch
                             </Link> : null}
-                            
+
                             <Link to="/contact" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
                                 Contact
                             </Link>
@@ -144,13 +144,19 @@ const Navbar = ({ isUser }) => {
                             <Link to="/" className="text-gray-900 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">
                                 Home
                             </Link>
-                           
+
                             <Link to="/services" className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">
                                 Services
                             </Link>
                             <Link to="/about" className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">
                                 About
                             </Link>
+                            {isUser ? <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">
+                                Dashboard
+                            </Link> : null}
+                            {isUser ? <Link to="/create-pitch" className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">
+                                Create Pitch
+                            </Link> : null}
                             <Link to="/contact" className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">
                                 Contact
                             </Link>
